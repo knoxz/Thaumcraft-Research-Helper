@@ -1,0 +1,16 @@
+[
+{
+  "modid": "tchelper",
+  "name": "TC Research-Helper",
+  "description": "Makes your Thaumcraft Research easy!",
+  "version": "1.0",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Knoxz"],
+  "credits": "The Forge and FML guys, for making forge.",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
