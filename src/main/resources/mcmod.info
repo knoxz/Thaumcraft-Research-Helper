@@ -1,14 +1,14 @@
 [
 {
   "modid": "tchelper",
-  "name": "TC Research-Helper",
-  "description": "Makes your Thaumcraft Research easy!",
-  "version": "1.0",
+  "name": "Thaumcraft Research Helper",
+  "description": "This is a ingame Thaumcraft Research Helper",
+  "version": "1.3",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",
   "authorList": ["Knoxz"],
-  "credits": "The Forge and FML guys, for making forge.",
+  "credits": "The Forge and FML guys, for making this example",
   "logoFile": "",
   "screenshots": [],
   "dependencies": []

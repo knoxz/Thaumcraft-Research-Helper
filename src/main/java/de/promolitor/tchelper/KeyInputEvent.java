@@ -10,9 +10,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
+import thaumcraft.api.aspects.Aspect;
 
 public class KeyInputEvent {
 
@@ -73,18 +75,27 @@ public class KeyInputEvent {
 						if (TCHelperMain.debugging) {
 							System.out.println("Combinations to check: " + toCheck);
 							for (Combination combination : toCheck) {
-								System.out
-										.println(
-												AspectCalculation
-														.solveIssues(AspectCalculation.map.get(combination.h1.aspect),
-																AspectCalculation.map.get(combination.h2.aspect))
-														.toString());
-								System.out.println("-----FINISHED!-----");
+								if (!Aspect.aspects.containsKey(combination.h1.aspect)
+										|| !Aspect.aspects.containsKey(combination.h2.aspect)) {
+									Minecraft.getMinecraft().thePlayer.addChatMessage(
+											new ChatComponentText("Sorry, no Addon Aspect supported yet!"));
+									return;
+								}
+								System.out.println("Checking" + combination.h1 + " to");
+								AspectCalculation.solveIssues(Aspect.aspects.get(combination.h1.aspect),
+										Aspect.aspects.get(combination.h2.aspect)).toString();
+
 							}
 						} else {
 							for (Combination combination : toCheck) {
-								AspectCalculation.solveIssues(AspectCalculation.map.get(combination.h1.aspect),
-										AspectCalculation.map.get(combination.h2.aspect));
+								if (!Aspect.aspects.containsKey(combination.h1.aspect)
+										|| !Aspect.aspects.containsKey(combination.h2.aspect)) {
+									Minecraft.getMinecraft().thePlayer.addChatMessage(
+											new ChatComponentText("Sorry, no Addon Aspect supported yet!"));
+									return;
+								}
+								AspectCalculation.solveIssues(Aspect.aspects.get(combination.h1.aspect),
+										Aspect.aspects.get(combination.h2.aspect));
 							}
 						}
 
