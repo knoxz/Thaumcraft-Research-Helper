@@ -23,7 +23,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @Mod(modid = TCHelperMain.MODID, version = TCHelperMain.VERSION, name = TCHelperMain.VERSION, clientSideOnly = true, canBeDeactivated = true)
 public class TCHelperMain {
 
-	public static final String VERSION = "1.0";
+	public static final String VERSION = "1.4";
 	public static final String MODID = "tchelper";
 	public static final String MODNAME = "TC Research-Helper";
 
@@ -35,7 +35,7 @@ public class TCHelperMain {
 	public static final int GuiMainID = 0;
 	public static boolean debugging = true;
 	public static Property aspectScale;
-	public static Property  topDistance;
+	public static Property topDistance;
 	public static Property leftSide;
 	// Says where the client and server 'proxy' code is loaded.
 	// @SidedProxy(clientSide = "de.promolitor.tchelper.proxies.ClientProxy",
@@ -49,8 +49,10 @@ public class TCHelperMain {
 		config = new Configuration(event.getSuggestedConfigurationFile());
 		config.load();
 		aspectScale = config.get("AspectScale", Configuration.CATEGORY_GENERAL, 8, "How big the Overlay should be!");
-		topDistance = config.get("TopDistance", Configuration.CATEGORY_GENERAL, 20, "Distance between top and first Aspect-Path");
-		leftSide = config.get("LeftSide?", Configuration.CATEGORY_GENERAL, true , "Switch to false to put the Aspect-Paths on the right side.");
+		topDistance = config.get("TopDistance", Configuration.CATEGORY_GENERAL, 20,
+				"Distance between top and first Aspect-Path");
+		leftSide = config.get("LeftSide?", Configuration.CATEGORY_GENERAL, true,
+				"Switch to false to put the Aspect-Paths on the right side.");
 		config.save();
 		MinecraftForge.EVENT_BUS.register(new KeyInputEvent());
 		ClientCommandHandler.instance.registerCommand(new CommandSetScale());
@@ -68,7 +70,7 @@ public class TCHelperMain {
 	@SideOnly(Side.CLIENT)
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent event) {
-		AspectCalculation.createGraph();
+		AspectCalculation.createCosts();
 		MinecraftForge.EVENT_BUS.register(new RenderGuiHandler());
 	}
 

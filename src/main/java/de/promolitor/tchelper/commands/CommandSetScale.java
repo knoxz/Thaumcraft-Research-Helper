@@ -50,6 +50,10 @@ public class CommandSetScale extends CommandBase {
 				return;
 			}
 
+		} else {
+			if (args.length == 1 && args[0].equals("test")) {
+				
+			}
 		}
 		throw new WrongUsageException("/tchelper [scale/top] value");
 	}

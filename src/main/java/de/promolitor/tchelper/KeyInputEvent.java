@@ -71,32 +71,19 @@ public class KeyInputEvent {
 						AspectCalculation.clearIssues();
 						ArrayList<Combination> toCheck = new ArrayList<Combination>();
 						checkRest(researchAspects, toCheck);
-
-						if (TCHelperMain.debugging) {
-							System.out.println("Combinations to check: " + toCheck);
-							for (Combination combination : toCheck) {
-								if (!Aspect.aspects.containsKey(combination.h1.aspect)
-										|| !Aspect.aspects.containsKey(combination.h2.aspect)) {
-									Minecraft.getMinecraft().thePlayer.addChatMessage(
-											new ChatComponentText("Sorry, no Addon Aspect supported yet!"));
-									return;
-								}
-								System.out.println("Checking" + combination.h1 + " to");
-								AspectCalculation.solveIssues(Aspect.aspects.get(combination.h1.aspect),
-										Aspect.aspects.get(combination.h2.aspect)).toString();
-
+						System.out.println("Combinations to check: " + toCheck);
+						for (Combination combination : toCheck) {
+							if (!Aspect.aspects.containsKey(combination.h1.aspect)
+									|| !Aspect.aspects.containsKey(combination.h2.aspect)) {
+								Minecraft.getMinecraft().thePlayer
+										.addChatMessage(new ChatComponentText("Sorry, no Addon Aspect supported yet!"));
+								return;
 							}
-						} else {
-							for (Combination combination : toCheck) {
-								if (!Aspect.aspects.containsKey(combination.h1.aspect)
-										|| !Aspect.aspects.containsKey(combination.h2.aspect)) {
-									Minecraft.getMinecraft().thePlayer.addChatMessage(
-											new ChatComponentText("Sorry, no Addon Aspect supported yet!"));
-									return;
-								}
-								AspectCalculation.solveIssues(Aspect.aspects.get(combination.h1.aspect),
-										Aspect.aspects.get(combination.h2.aspect));
-							}
+							System.out.println("Checking" + combination.h1 + " to");
+							AspectCalculation.solveIussesDeep(Aspect.aspects.get(combination.h1.aspect),
+									Aspect.aspects.get(combination.h2.aspect),
+									AspectCalculation.getDistance(combination.h1, combination.h2));
+
 						}
 
 						drawing = true;

@@ -3,7 +3,7 @@
   "modid": "tchelper",
   "name": "Thaumcraft Research Helper",
   "description": "This is a ingame Thaumcraft Research Helper",
-  "version": "1.3",
+  "version": "1.4",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",

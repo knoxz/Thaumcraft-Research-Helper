@@ -9,28 +9,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jgrapht.Graphs;
-import org.jgrapht.UndirectedGraph;
-import org.jgrapht.WeightedGraph;
-import org.jgrapht.alg.DijkstraShortestPath;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.DefaultWeightedEdge;
-import org.jgrapht.graph.SimpleGraph;
-import org.jgrapht.graph.SimpleWeightedGraph;
-import org.jgrapht.WeightedGraph;
-
 import de.promolitor.tchelper.TCHelperMain;
 import thaumcraft.api.aspects.Aspect;
 
 public class AspectCalculation {
 
 	public static final int[][] NEIGHBOURS = { { 1, 0 }, { 1, -1 }, { 0, -1 }, { -1, 0 }, { -1, 1 }, { 0, 1 } };
-	public static UndirectedGraph<String, DefaultWeightedEdge> graph;
+	public static HashMap<Aspect, Integer> cost;
 	// public static HashMap<String, Aspect> map = new HashMap<String,
 	// Aspect>();
 	private static int iteration = 0;
 
 	public static ArrayList<String[]> solvedIssues;
+
+	private static ArrayList<Path> paths;
+	private static ArrayList<Path> pathSolutions;
 
 	public static int getDistance(Hexagon a1, Hexagon a2) {
 		return (Math.abs(a1.q - a2.q) + Math.abs(a1.r - a2.r) + Math.abs(a1.q + a1.r - a2.q - a2.r)) / 2;
@@ -40,82 +33,150 @@ public class AspectCalculation {
 		solvedIssues = new ArrayList<String[]>();
 	}
 
-	public static String[] solveIssues(Aspect start, Aspect destination) {
-		DijkstraShortestPath test = new DijkstraShortestPath(graph, start.getTag(), destination.getTag());
-		List list = test.getPathEdgeList();
-		String[] paths = new String[list.size() + 1];
-		DefaultEdge first = (DefaultWeightedEdge) list.remove(0);
+	public static void solveIussesDeep(Aspect start, Aspect destination, int distance) {
+		paths = new ArrayList<Path>();
+		pathSolutions = new ArrayList<Path>();
+		if (!start.isPrimal()) {
+			for (Aspect component : start.getComponents()) {
+				ArrayList<Aspect> pathSoFar = new ArrayList<Aspect>();
+				pathSoFar.add(start);
+				paths.add(new Path(component, pathSoFar));
 
-		String stripped = first.toString().replaceAll(" ", "").replaceAll("\\(", "").replaceAll("\\)", "");
-		String[] splitted = stripped.split(":");
-		if (splitted[0].equals(start.getTag())) {
-			paths[0] = start.getTag();
-			paths[1] = splitted[1];
-		} else {
-			paths[0] = start.getTag();
-			paths[1] = splitted[0];
+			}
 		}
-
-		if (TCHelperMain.debugging) {
-			System.out.println("");
-			System.out.println("-----STARTING DIJKSTRA-----");
-			int i = 2;
-			for (Object object : list) {
-				DefaultEdge a = (DefaultWeightedEdge) object;
-				stripped = a.toString().replaceAll(" ", "").replaceAll("\\(", "").replaceAll("\\)", "");
-				splitted = stripped.split("\\:");
-				if (paths[i - 1].equals(splitted[0])) {
-					paths[i] = splitted[1];
-				} else {
-					paths[i] = splitted[0];
+		for (Map.Entry<String, Aspect> entry : Aspect.aspects.entrySet()) {
+			Aspect as = entry.getValue();
+			if (!as.isPrimal()) {
+				for (Aspect component : as.getComponents()) {
+					if (component.getTag().equals(start.getTag())) {
+						ArrayList<Aspect> pathSoFar = new ArrayList<Aspect>();
+						pathSoFar.add(start);
+						paths.add(new Path(as, pathSoFar));
+					}
 				}
-				// System.out.println(a);
-				i++;
+			}
+
+		}
+		for (int i = 1; i < distance + 2; i++) {
+			createPathsNewPaths();
+			if (checkForSolved(destination, distance + 1)) {
+				break;
 			}
 		}
-		if (TCHelperMain.debugging) {
-			System.out.println("");
-			for (int i = 0; i < paths.length; i++) {
-				System.out.println(paths[i]);
+		if (pathSolutions.size() > 1) {
+			// for (Path p : pathSolutions) {
+			// System.out.println("Solution Path:");
+			// for (Aspect is : p.pathSoFar) {
+			// System.out.println(is.getTag() + " / ");
+			// }
+			// System.out.println("With Path Cost: " + p.getCost());
+			//
+			// }
+			int cost = Integer.MAX_VALUE;
+			int id = 0;
+			int iter = 0;
+			for (Path is : pathSolutions) {
+				int tmpCost = is.getCost();
+				if (tmpCost < cost) {
+					id = iter;
+					cost = tmpCost;
+				}
+				iter++;
 			}
-			System.out.println("");
+			String[] solution = new String[pathSolutions.get(id).pathSoFar.size() + 1];
+			for (int i = 0; i < solution.length - 1; i++) {
+				solution[i] = pathSolutions.get(id).pathSoFar.get(i).getTag();
+			}
+			solution[solution.length - 1] = pathSolutions.get(id).currentAspect.getTag();
+			solvedIssues.add(solution);
+			System.out.println("SOLUTION FOUND: " + solution.toString());
+
+		} else {
+			String[] solution = new String[pathSolutions.get(0).pathSoFar.size() + 1];
+			for (int i = 0; i < solution.length - 1; i++) {
+				solution[i] = pathSolutions.get(0).pathSoFar.get(i).getTag();
+			}
+			solution[solution.length - 1] = pathSolutions.get(0).currentAspect.getTag();
+			solvedIssues.add(solution);
+			System.out.println("SOLUTION FOUND: " + solution.toString());
 		}
-		solvedIssues.add(paths);
-		return paths;
 
 	}
 
-	/**
-	 * 
-	 */
-	/**
-	 * 
-	 */
-	public static void createGraph() {
-		graph = new SimpleWeightedGraph<String, DefaultWeightedEdge>(DefaultWeightedEdge.class);
-
-		for (Map.Entry<String, Aspect> entry : Aspect.aspects.entrySet()) {
-			System.out.println("ADDING ASPECT: " + entry.getKey());
-			ArrayList<Aspect> ar = entry.getValue().getPrimalAspects();
-			for (Aspect aspect : ar) {
-				System.out.println(aspect.getTag());
+	private static boolean checkForSolved(Aspect destination, int distance) {
+		for (Path p : paths) {
+			if (p.currentAspect.getTag().equals(destination.getTag()) && (p.pathSoFar.size() + 1 == distance
+					|| p.pathSoFar.size() + 1 == distance + 1 || p.pathSoFar.size() + 1 == distance + 2)) {
+				pathSolutions.add(p);
 			}
-			System.out.println(entry.getValue().getPrimalAspects());
-			graph.addVertex(entry.getKey());
+		}
+		if (pathSolutions.size() > 0) {
+			return true;
+		} else {
+			return false;
+		}
+		// TODO Auto-generated method stub
+
+	}
+
+	private static void createPathsNewPaths() {
+		ArrayList<Path> tempPaths = new ArrayList<Path>();
+		for (Path p : paths) {
+			if (!p.currentAspect.isPrimal()) {
+				for (Aspect component : p.currentAspect.getComponents()) {
+					ArrayList<Aspect> pathSoFar = new ArrayList<Aspect>();
+					for (Aspect aspect : p.pathSoFar) {
+						pathSoFar.add(aspect);
+					}
+					pathSoFar.add(p.currentAspect);
+					tempPaths.add(new Path(component, pathSoFar));
+
+				}
+			}
+			for (Map.Entry<String, Aspect> entry : Aspect.aspects.entrySet()) {
+				Aspect as = entry.getValue();
+				if (!as.isPrimal()) {
+					for (Aspect component : as.getComponents()) {
+						if (component.getTag().equals(p.currentAspect.getTag())) {
+							ArrayList<Aspect> pathSoFar = new ArrayList<Aspect>();
+							for (Aspect aspect : p.pathSoFar) {
+								pathSoFar.add(aspect);
+							}
+							pathSoFar.add(p.currentAspect);
+							tempPaths.add(new Path(as, pathSoFar));
+						}
+					}
+				}
+
+			}
 
 		}
+		paths = tempPaths;
+	}
 
+	public static void createCosts() {
+		cost = new HashMap<Aspect, Integer>();
 		for (Map.Entry<String, Aspect> entry : Aspect.aspects.entrySet()) {
 			if (!entry.getValue().isPrimal()) {
-				System.out.println("Adding ");
-				Graphs.addEdge(graph, entry.getKey(), entry.getValue().getComponents()[0].getTag(),
-						entry.getValue().getCompoundAspects().size());
-				Graphs.addEdge(graph, entry.getKey(), entry.getValue().getComponents()[1].getTag(),
-						entry.getValue().getCompoundAspects().size());
-
+				aspectCost = 0;
+				checkCost(entry.getValue());
+				System.out.println("Cost of " + entry.getValue().getTag() + " = " + aspectCost);
+				cost.put(entry.getValue(), aspectCost);
 			}
-
 		}
 
+	}
+
+	private static int aspectCost;
+
+	private static void checkCost(Aspect aspect) {
+
+		for (Aspect as : aspect.getComponents()) {
+			if (as.isPrimal()) {
+				aspectCost++;
+			} else {
+				checkCost(as);
+			}
+		}
 	}
 }

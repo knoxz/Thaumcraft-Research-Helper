@@ -56,9 +56,12 @@ public class GuiMain extends Gui {
 				for (int y = 0; y < aspects; y++) {
 					Aspect as = Aspect.aspects.get(solved[y]);
 					int tmpY = posY;
-					if (!as.isPrimal()) {
-						checkPrimalDeep(as);
+					if (y > 0 && y < aspects - 1) {
+						if (!as.isPrimal()) {
+							checkPrimalDeep(as);
+						}
 					}
+
 					posY = tmpY;
 					posX = 20;
 					drawAspect(as, mc, scale, y);
@@ -122,8 +125,8 @@ public class GuiMain extends Gui {
 		// + " + p2.getTag());
 		drawAspect(as, mc, scale, y);
 		mc.getTextureManager().bindTexture(tchelperRight);
-		drawModalRectWithCustomSizedTexture((posX + ((0 + y) * (scale * 2) + scale)), posY, 0, 0, scale,
-				scale, scale, scale);
+		drawModalRectWithCustomSizedTexture((posX + ((0 + y) * (scale * 2) + scale)), posY, 0, 0, scale, scale, scale,
+				scale);
 		y++;
 		drawAspect(p1, mc, scale, y);
 		y++;
