@@ -27,34 +27,23 @@ public class KeyInputEvent {
 			if (drawing) {
 				drawing = false;
 			} else {
-				// Minecraft.getMinecraft().displayGuiScreen(new GuiMain());
 				ItemStack heldItem = TCHelperMain.mc.thePlayer.inventory.getCurrentItem();
 				if (heldItem != null) {
-					System.out.println(heldItem.getItem().getUnlocalizedName());
 					if (heldItem.getItem().getUnlocalizedName().equals("item.research_notes")) {
 						NBTTagList aspectsTagList = heldItem.getTagCompound().getTagList("aspects", 10);
 
-						System.out.println(aspectsTagList.getCompoundTagAt(0).getTag("amount"));
 						HashMap<String, Integer> givenAspects = new HashMap<String, Integer>();
-						givenAspects.put("aer",
-								Integer.valueOf(aspectsTagList.getCompoundTagAt(0).getTag("amount").toString()));
-						givenAspects.put("terra",
-								Integer.valueOf(aspectsTagList.getCompoundTagAt(1).getTag("amount").toString()));
-						givenAspects.put("ignis",
-								Integer.valueOf(aspectsTagList.getCompoundTagAt(2).getTag("amount").toString()));
-						givenAspects.put("aqua",
-								Integer.valueOf(aspectsTagList.getCompoundTagAt(3).getTag("amount").toString()));
-						givenAspects.put("ordo",
-								Integer.valueOf(aspectsTagList.getCompoundTagAt(4).getTag("amount").toString()));
-						givenAspects.put("perditio",
-								Integer.valueOf(aspectsTagList.getCompoundTagAt(5).getTag("amount").toString()));
+						for (int i = 0; i < aspectsTagList.tagCount(); ++i) {
+							NBTTagCompound tag = aspectsTagList.getCompoundTagAt(i);
+							givenAspects.put(tag.getString("key"), tag.getInteger("amount"));
+						}
 
 						NBTTagList hexsTagList = heldItem.getTagCompound().getTagList("hexgrid", 10);
 						ArrayList<Hexagon> researchAspects = new ArrayList<Hexagon>();
 						NBTTagCompound currentHex = hexsTagList.getCompoundTagAt(0);
 						for (int i = 0; i <= 100; i++) {
 							if (currentHex.getTag("aspect") != null) {
-								String aspect = currentHex.getTag("aspect").toString().replaceAll("\"", "");
+								String aspect = currentHex.getString("aspect");
 								researchAspects.add(
 										new Hexagon(currentHex.getByte("hexq"), currentHex.getByte("hexr"), aspect));
 							}
