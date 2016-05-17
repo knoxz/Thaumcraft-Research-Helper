@@ -27,41 +27,29 @@ public class KeyInputEvent {
 			if (drawing) {
 				drawing = false;
 			} else {
-				// Minecraft.getMinecraft().displayGuiScreen(new GuiMain());
 				ItemStack heldItem = TCHelperMain.mc.thePlayer.inventory.getCurrentItem();
 				if (heldItem != null) {
-					System.out.println(heldItem.getItem().getUnlocalizedName());
 					if (heldItem.getItem().getUnlocalizedName().equals("item.research_notes")) {
 						NBTTagList aspectsTagList = heldItem.getTagCompound().getTagList("aspects", 10);
 
-						System.out.println(aspectsTagList.getCompoundTagAt(0).getTag("amount"));
 						HashMap<String, Integer> givenAspects = new HashMap<String, Integer>();
-						givenAspects.put("aer",
-								Integer.valueOf(aspectsTagList.getCompoundTagAt(0).getTag("amount").toString()));
-						givenAspects.put("terra",
-								Integer.valueOf(aspectsTagList.getCompoundTagAt(1).getTag("amount").toString()));
-						givenAspects.put("ignis",
-								Integer.valueOf(aspectsTagList.getCompoundTagAt(2).getTag("amount").toString()));
-						givenAspects.put("aqua",
-								Integer.valueOf(aspectsTagList.getCompoundTagAt(3).getTag("amount").toString()));
-						givenAspects.put("ordo",
-								Integer.valueOf(aspectsTagList.getCompoundTagAt(4).getTag("amount").toString()));
-						givenAspects.put("perditio",
-								Integer.valueOf(aspectsTagList.getCompoundTagAt(5).getTag("amount").toString()));
+						for (int i = 0; i < aspectsTagList.tagCount(); i++) {
+							NBTTagCompound tag = aspectsTagList.getCompoundTagAt(i);
+							givenAspects.put(tag.getString("key"), tag.getInteger("amount"));
+						}
 
 						NBTTagList hexsTagList = heldItem.getTagCompound().getTagList("hexgrid", 10);
 						ArrayList<Hexagon> researchAspects = new ArrayList<Hexagon>();
-						NBTTagCompound currentHex = hexsTagList.getCompoundTagAt(0);
-						for (int i = 0; i <= 100; i++) {
-							if (currentHex.getTag("aspect") != null) {
-								String aspect = currentHex.getTag("aspect").toString().replaceAll("\"", "");
-								researchAspects.add(
-										new Hexagon(currentHex.getByte("hexq"), currentHex.getByte("hexr"), aspect));
-							}
-							if (hexsTagList.getCompoundTagAt(i) != null) {
-								currentHex = hexsTagList.getCompoundTagAt(i);
-							} else {
-								currentHex = null;
+						for (int i = 0; i <= hexsTagList.tagCount(); i++) {
+							NBTTagCompound currentHex = hexsTagList.getCompoundTagAt(i);
+							if (currentHex.hasKey("aspect")) {
+								String aspect = currentHex.getString("aspect");
+								researchAspects.add(new Hexagon(
+									currentHex.getByte("hexq"), /* hexq */
+									currentHex.getByte("hexr"), /* hexr */
+									aspect, /* aspect name */
+									currentHex.getByte("type") == 1 /* is NOT deletable */
+								));
 							}
 						}
 						if (TCHelperMain.debugging) {
@@ -80,9 +68,11 @@ public class KeyInputEvent {
 								return;
 							}
 							System.out.println("Checking" + combination.h1 + " to");
-							AspectCalculation.solveIussesDeep(Aspect.aspects.get(combination.h1.aspect),
-									Aspect.aspects.get(combination.h2.aspect),
-									AspectCalculation.getDistance(combination.h1, combination.h2));
+							AspectCalculation.solveIussesDeep(
+								Aspect.aspects.get(combination.h1.aspect), 
+								Aspect.aspects.get(combination.h2.aspect), 
+								AspectCalculation.getDistance(combination.h1, combination.h2)
+							);
 
 						}
 
@@ -94,8 +84,12 @@ public class KeyInputEvent {
 		}
 	}
 
+	private boolean isOneNotDeletable(Hexagon h1, Hexagon h2) {
+		return h1.isNotDeleteable() || h2.isNotDeleteable();
+	}
+
 	private void checkRest(ArrayList<Hexagon> researchAspects, ArrayList<Combination> toCheck) {
-		int minDistance = 10000;
+		int minDistance;
 		Hexagon h1 = null;
 		Hexagon h2 = null;
 		for (int i = 0; i < researchAspects.size(); i++) {
@@ -113,7 +107,9 @@ public class KeyInputEvent {
 			}
 
 		}
-		toCheck.add(new Combination(h1, h2));
+		if(isOneNotDeletable(h1, h2)) {
+			toCheck.add(new Combination(h1, h2));
+		}
 		h1.visited = true;
 		h2.visited = true;
 		boolean stillNeedToCheck = false;
